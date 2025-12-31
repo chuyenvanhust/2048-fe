@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import GameGrid from './GameGrid';
 import DirectionControls from './DirectionControls';
+import MoveEffect from './MoveEffect';
 import * as api from '../api';
 
 export default function Board({ boardId, username }) {
   
-  const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
+const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
   const [boardState, setBoardState] = useState({
     board: Array.from({ length: 4 }, () => Array(4).fill(0)),
     score: 0,
@@ -20,6 +21,7 @@ export default function Board({ boardId, username }) {
 
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, stats: {} });
   const [isBatchRunning, setIsBatchRunning] = useState(false);
+  const [lastMove, setLastMove] = useState(null); // 🔥 State cho hiệu ứng di chuyển
 
   const stopSignal = useRef(false);
 
@@ -41,6 +43,7 @@ export default function Board({ boardId, username }) {
   const handleNewGame = async () => {
     stopSignal.current = true;
     setIsBatchRunning(false);
+    setLastMove(null); // Reset hiệu ứng
     try {
       const res = await api.newBoardGame(boardId, boardUsername);
       setBoardState(prev => ({
@@ -59,15 +62,21 @@ export default function Board({ boardId, username }) {
 
   const handleMove = async (direction) => {
     if (boardState.isRunning || isBatchRunning) return;
+    
+    // 🔥 Trigger hiệu ứng di chuyển màu xanh
+    setLastMove(direction);
+    
     try {
       const res = await api.moveBoardDirection(boardId, direction);
+      
       setBoardState(prev => ({
         ...prev,
         board: res.data.board,
         score: res.data.score,
         gameOver: res.data.gameOver,
-        suggestedMove: null
+        suggestedMove: null // Clear hint sau khi di chuyển
       }));
+
     } catch (err) { 
       console.error(err); 
     }
@@ -76,18 +85,37 @@ export default function Board({ boardId, username }) {
   const handleAiMove = async () => {
     try {
       const res = await api.aiBoardMove(boardId, boardState.algorithm);
+      
+      // Đọc hướng đi từ suggestedMove (Backend đã gán ở trên)
+      const movePerformed = res.data.suggestedMove;
+
+      if (movePerformed) {
+        // RESET để ép React nhận diện thay đổi nếu hướng đi trùng nhau (ví dụ: LEFT -> LEFT)
+        setLastMove(null); 
+        
+        requestAnimationFrame(() => {
+          setLastMove(movePerformed.toUpperCase());
+        });
+      }
+
       setBoardState(prev => ({
         ...prev,
         board: res.data.board,
         score: res.data.score,
         gameOver: res.data.gameOver,
-        suggestedMove: null
+        suggestedMove: null // Xóa hint cũ (nếu có)
       }));
+
+      // Tắt hiệu ứng sau 300ms
+      setTimeout(() => setLastMove(null), 300);
+
       return !res.data.gameOver;
     } catch (err) {
+      console.error('AI Move Error:', err);
       return false;
     }
   };
+
 
   const handleAutoPlay = async () => {
     if (boardState.isRunning) return;
@@ -106,27 +134,44 @@ export default function Board({ boardId, username }) {
 
   const handleStop = () => {
     stopSignal.current = true;
-    setBoardState(prev => ({ ...prev, isRunning: false }));
     setIsBatchRunning(false);
-  };
+    
+    // Reset toàn bộ trạng thái UI
+    setLastMove(null); // Tắt hiệu ứng xanh
+    setBoardState(prev => ({ 
+        ...prev, 
+        isRunning: false, 
+        suggestedMove: null, // Tắt hiệu ứng vàng (hint)
+        isLoading: false 
+    }));
+};
 
   const handleModeChange = (newMode) => {
     handleStop();
+    setLastMove(null);
     setBoardState(prev => ({ ...prev, mode: newMode, suggestedMove: null }));
     setBatchProgress({ current: 0, total: 0, stats: {} });
   };
 
   const handleGetHint = async () => {
+    if (boardState.isLoading || boardState.gameOver) return;
+
     setBoardState(prev => ({ ...prev, isLoading: true }));
+
     try {
       const res = await api.getBoardHint(boardId, boardState.algorithm);
-      setBoardState(prev => ({ 
-        ...prev, 
-        suggestedMove: res.data.suggestedMove, 
-        isLoading: false 
+
+      const dir = res.data?.suggestedMove?.toUpperCase();
+      const valid = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+
+      setBoardState(prev => ({
+        ...prev,
+        suggestedMove: valid.includes(dir) ? dir : null
       }));
-    } catch (err) { 
-      setBoardState(prev => ({ ...prev, isLoading: false })); 
+    } catch (err) {
+      console.error('Error getting hint:', err);
+    } finally {
+      setBoardState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -144,26 +189,35 @@ export default function Board({ boardId, username }) {
   };
 
   const handleBatchRun = async (count) => {
-    if (isBatchRunning) return;
+  if (isBatchRunning) return;
+  
+  setIsBatchRunning(true);
+  stopSignal.current = false;
+  setBatchProgress({ current: 0, total: count, stats: {} });
+
+  try {
+    const res = await api.runBoardBatch(boardId, count, boardState.algorithm, boardUsername);
+    setBatchProgress({
+      current: res.data.totalGames || count,
+      total: count,
+      stats: res.data.stats || {}
+    });
+  } catch (err) {
+    console.error('Batch error:', err);
     
-    setIsBatchRunning(true);
-    stopSignal.current = false;
-    setBatchProgress({ current: 0, total: count, stats: {} });
-
-    try {
-      const res = await api.runBoardBatch(boardId, count, boardState.algorithm, boardUsername);
-      setBatchProgress({
-        current: res.data.totalGames || count,
-        total: count,
-        stats: res.data.stats || {}
-      });
-    } catch (err) {
-      console.error('Batch error:', err);
+    // 🔥 Xử lý lỗi 401 - session hết hạn
+    if (err.response?.status === 401) {
+      alert('Session expired. Creating new session...');
+      await api.initSession(); // Tạo session mới
+      // Có thể tự động retry
+      // await handleBatchRun(count);
     }
-
+  } finally {
     setIsBatchRunning(false);
-  };
+  }
+};
 
+  // Keyboard controls for manual mode
   useEffect(() => {
     if (boardState.mode !== 'SINGLE' || boardState.gameOver || boardState.isRunning) return;
     
@@ -187,7 +241,7 @@ export default function Board({ boardId, username }) {
   return (
     <div className="game-board-container">
       <div className="board-header">
-        <h2>Board {boardId}</h2>
+        <h2>🎮 Board {boardId}</h2>
         <div className="board-username-input">
           <input 
             type="text" 
@@ -246,7 +300,7 @@ export default function Board({ boardId, username }) {
             <input 
               type="range" 
               min="1" 
-              max="12" 
+              max="6" 
               value={boardState.aiDepth}
               onChange={(e) => handleDepthChange(parseInt(e.target.value))}
               disabled={boardState.isLoading}
@@ -279,7 +333,7 @@ export default function Board({ boardId, username }) {
             <input 
               type="range" 
               min="1" 
-              max="12" 
+              max="6" 
               value={boardState.aiDepth}
               onChange={(e) => handleDepthChange(parseInt(e.target.value))}
               disabled={boardState.isRunning || isBatchRunning}
@@ -299,14 +353,25 @@ export default function Board({ boardId, username }) {
           board={boardState.board} 
           suggestedMove={boardState.suggestedMove} 
         />
+        
+        {/* 🔥 MOVE EFFECT OVERLAY - Hiệu ứng xanh lá khi di chuyển */}
+        {lastMove && (
+          <MoveEffect 
+            direction={lastMove}
+            onAnimationEnd={() => setLastMove(null)}
+          />
+        )}
+        
+        {boardState.gameOver && (
+          <div className="game-over-badge">
+            <h3>🎮 Game Over!</h3>
+            <p>Max Tile: {Math.max(...boardState.board.flat())}</p>
+            <p style={{fontSize: '1rem', marginTop: '10px', color: '#999'}}>
+              Final Score: {boardState.score}
+            </p>
+          </div>
+        )}
       </div>
-
-      {boardState.gameOver && (
-        <div className="game-over-badge">
-          <h3>Game Over!</h3>
-          <p>Max: {Math.max(...boardState.board.flat())}</p>
-        </div>
-      )}
 
       {/* MODE-SPECIFIC CONTROLS */}
       {boardState.mode === 'SINGLE' && (

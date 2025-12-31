@@ -3,22 +3,33 @@ import React from 'react';
 /**
  * Component hiển thị một ô cờ (tile) đơn lẻ
  */
-const Tile = ({ value = 0 }) => {
-    // Normalize value to a number and guard against null/undefined
-    const val = Number(value) || 0;
+const Tile = ({ value, x, y }) => {
+    const isNew = React.useRef(true);
+    
+    // Logic xác định màu sắc (giữ nguyên của bạn hoặc tối ưu thêm)
+    const getBgColor = (v) => {
+        const colors = {
+            2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563',
+            32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61',
+            512: '#edc850', 1024: '#edc53f', 2048: '#edc22e'
+        };
+        return colors[v] || '#3c3a32';
+    };
 
-    // Logic để xác định tên lớp CSS dựa trên giá trị
-    const getClassName = (v) => {
-        if (v === 0) return 'tile-empty';
-        if (v > 2048) return 'tile-large';
-        return `tile-${v}`;
+    const style = {
+        transform: `translate(${x}px, ${y}px)`,
+        backgroundColor: getBgColor(value),
+        color: value <= 4 ? '#776e65' : '#f9f6f2',
+        fontSize: value > 100 ? '28px' : '35px'
     };
 
     return (
-        <div className={`tile ${getClassName(val)}`}>
-            {val !== 0 ? val : null}
+        <div 
+            className={`tile ${value > 2048 ? 'tile-large' : ''}`} 
+            style={style}
+        >
+            {value}
         </div>
     );
 };
-
 export default Tile;

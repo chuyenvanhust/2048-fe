@@ -58,7 +58,7 @@ export default function App() {
       {/* HEADER */}
       <header className="app-header">
         <div className="header-content">
-          <h1 className="app-title">🎮 2048 AI Master</h1>
+          <h1 className="app-title">🎮 2048 AI 3/5</h1>
           <div className="user-info">
             
             <span className="session-badge" title={`Session ID: ${sessionId}`}>

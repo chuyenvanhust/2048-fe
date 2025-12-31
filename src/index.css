@@ -10,8 +10,11 @@
     --text-dark: #776e65;
     --text-light: #f9f6f2;
     
-    --tile-size: 90px;
-    --grid-gap: 8px;
+    /* FIXED: Điều chỉnh size chính xác */
+    --tile-size: 85px;
+    --grid-gap: 12px;
+    --cell-size: 85px; /* Tile size */
+    --grid-padding: 12px;
     
     --tile-color-2: #eee4da;
     --tile-color-4: #ede0c8;
@@ -24,7 +27,11 @@
     --tile-color-512: #edc850;
     --tile-color-1024: #edc53f;
     --tile-color-2048: #edc22e;
-    --tile-color-large: #3c3a32;
+    --tile-color-4096: #3c3a32;
+    --tile-color-8192: #3c3a32;
+    --tile-color-16384: #3c3a32;
+    --tile-color-32768: #3c3a32;
+    --tile-color-65536: #3c3a32;
     
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -465,37 +472,52 @@ body {
     transform: translateY(-50%) translateX(5px);
 }
 
-/* ================= GAME GRID ================= */
+/* ================= GAME GRID - FIXED ================= */
 .game-grid-container {
     position: relative;
-    width: 380px;
-    height: 380px;
+    width: 400px;
+    height: 400px;
     background: var(--grid-bg);
-    padding: var(--grid-gap);
-    border-radius: 12px;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
-    margin: 50px auto;
+    border-radius: 8px;
+    padding: var(--grid-padding);
+    box-sizing: border-box;
+    margin: 40px auto;
 }
 
-.game-grid {
+/* Lớp nền tĩnh */
+.grid-background {
+    position: absolute;
+    top: var(--grid-padding);
+    left: var(--grid-padding);
     display: grid;
-    grid-template-columns: repeat(4, var(--tile-size));
-    grid-template-rows: repeat(4, var(--tile-size));
+    grid-template-columns: repeat(4, var(--cell-size));
+    grid-template-rows: repeat(4, var(--cell-size));
     gap: var(--grid-gap);
 }
 
-/* ================= TILES ================= */
+.grid-cell-empty {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    background: rgba(238, 228, 218, 0.35);
+    border-radius: 4px;
+}
+
+/* ================= TILES - FIXED ANIMATION ================= */
 .tile {
-    width: var(--tile-size);
-    height: var(--tile-size);
-    border-radius: 8px;
+    position: absolute;
+    top: var(--grid-padding);
+    left: var(--grid-padding);
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border-radius: 4px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 900;
-    color: var(--text-dark);
-    transition: all 0.15s ease;
+    /* FIXED: Animation trượt mượt */
+    transition: transform 150ms ease-in-out;
+    z-index: 2;
 }
 
 .tile-empty { 
@@ -503,44 +525,111 @@ body {
     font-size: 0;
 }
 
-.tile-2 { background: var(--tile-color-2); }
-.tile-4 { background: var(--tile-color-4); }
+.tile-2 { background: var(--tile-color-2); color: var(--text-dark); }
+.tile-4 { background: var(--tile-color-4); color: var(--text-dark); }
 .tile-8 { background: var(--tile-color-8); color: var(--text-light); }
 .tile-16 { background: var(--tile-color-16); color: var(--text-light); }
 .tile-32 { background: var(--tile-color-32); color: var(--text-light); }
 .tile-64 { background: var(--tile-color-64); color: var(--text-light); }
-.tile-128 { background: var(--tile-color-128); color: var(--text-light); font-size: 24px; }
-.tile-256 { background: var(--tile-color-256); color: var(--text-light); font-size: 24px; }
-.tile-512 { background: var(--tile-color-512); color: var(--text-light); font-size: 24px; }
-.tile-1024 { background: var(--tile-color-1024); color: var(--text-light); font-size: 20px; }
-.tile-2048 { background: var(--tile-color-2048); color: var(--text-light); font-size: 20px; }
-.tile-large { background: var(--tile-color-large); color: var(--text-light); font-size: 18px; }
+.tile-128 { background: var(--tile-color-128); color: var(--text-light); font-size: 28px; }
+.tile-256 { background: var(--tile-color-256); color: var(--text-light); font-size: 28px; }
+.tile-512 { background: var(--tile-color-512); color: var(--text-light); font-size: 28px; }
+.tile-1024 { background: var(--tile-color-1024); color: var(--text-light); font-size: 24px; }
+.tile-2048 { background: var(--tile-color-2048); color: var(--text-light); font-size: 24px; }
+.tile-4096 { background: var(--tile-color-4096); color: var(--text-light); font-size: 20px; }
+.tile-8192 { background: var(--tile-color-8192); color: var(--text-light); font-size: 20px; }
+.tile-16384 { background: var(--tile-color-16384); color: var(--text-light); font-size: 20px; }
+.tile-32768 { background: var(--tile-color-32768); color: var(--text-light); font-size: 20px; }
+.tile-65536 { background: var(--tile-color-65536); color: var(--text-light); font-size: 20px; }
 
-/* ================= HINT OVERLAY ================= */
-.hint-overlay {
-    position: absolute;
-    top: var(--grid-gap);
-    left: var(--grid-gap);
-    width: calc(100% - 2 * var(--grid-gap));
-    height: calc(100% - 2 * var(--grid-gap));
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-    z-index: 5;
-    animation: pulse 1s infinite;
+/* Animation khi mới xuất hiện */
+.tile-new {
+    animation: appear 200ms ease-out;
 }
 
-@keyframes pulse {
+/* Animation khi gộp ô */
+.tile-merged {
+    animation: pop 200ms ease-in-out;
+    z-index: 3;
+}
+
+@keyframes appear {
+    0% { opacity: 0; transform: scale(0); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+/* ================= HINT OVERLAY - FIXED ================= */
+.hint-overlay-v2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Hint direction effects */
+.hint-glow-UP { 
+    box-shadow: inset 0 30px 40px -20px rgba(255, 165, 0, 0.8);
+    border-top: 5px solid #ffa500;
+    animation: hint-pulse-up 1s infinite;
+}
+
+.hint-glow-DOWN { 
+    box-shadow: inset 0 -30px 40px -20px rgba(255, 165, 0, 0.8);
+    border-bottom: 5px solid #ffa500;
+    animation: hint-pulse-down 1s infinite;
+}
+
+.hint-glow-LEFT { 
+    box-shadow: inset 30px 0 40px -20px rgba(255, 165, 0, 0.8);
+    border-left: 5px solid #ffa500;
+    animation: hint-pulse-left 1s infinite;
+}
+
+.hint-glow-RIGHT { 
+    box-shadow: inset -30px 0 40px -20px rgba(255, 165, 0, 0.8);
+    border-right: 5px solid #ffa500;
+    animation: hint-pulse-right 1s infinite;
+}
+
+@keyframes hint-pulse-up {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
 
-.hint-arrow {
-    width: 120px;
-    height: 120px;
-    transition: transform 0.3s;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+@keyframes hint-pulse-down {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+@keyframes hint-pulse-left {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+@keyframes hint-pulse-right {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Animation cho mũi tên hint */
+@keyframes hint-bounce {
+    0%, 100% { 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    50% { 
+        transform: translate(-50%, -50%) scale(1.2); 
+    }
 }
 
 /* ================= GAME OVER ================= */
@@ -1024,17 +1113,18 @@ body {
     }
     
     .game-area {
-        width: 360px;
-        height: 360px;
+        width: 340px;
+        height: 340px;
     }
     
     .game-grid-container {
-        width: 320px;
-        height: 320px;
+        width: 340px;
+        height: 340px;
     }
     
     :root {
         --tile-size: 75px;
+        --cell-size: 75px;
     }
     
     .direction-btn {
@@ -1050,4 +1140,60 @@ body {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+
+/* Khung hiệu ứng chung */
+.direction-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Biến thể màu Vàng (Cho HINT) */
+.overlay-yellow {
+    --glow-color: rgba(255, 165, 0, 0.7);
+    --border-color: #ffa500;
+}
+/* Biến thể màu Xanh lá (Cho MOVE) */
+.overlay-green {
+    --glow-color: rgba(76, 175, 80, 0.7);
+    --border-color: #4CAF50;
+}
+
+/* Các hướng cụ thể sử dụng Variable */
+.glow-UP { box-shadow: inset 0 40px 50px -20px var(--glow-color); border-top: 6px solid var(--border-color); }
+.glow-DOWN { box-shadow: inset 0 -40px 50px -20px var(--glow-color); border-bottom: 6px solid var(--border-color); }
+.glow-LEFT { box-shadow: inset 40px 0 50px -20px var(--glow-color); border-left: 6px solid var(--border-color); }
+.glow-RIGHT { box-shadow: inset -40px 0 50px -20px var(--glow-color); border-right: 6px solid var(--border-color); }
+
+.glow-animation { animation: pulse-glow 0.8s infinite; }
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+.direction-text {
+    color: white;
+    font-weight: bold;
+    font-size: 5rem;
+    text-shadow: 0 0 20px var(--border-color);
+    animation: hint-bounce 0.8s infinite;
+}
+
+.direction-badge {
+    background-color: var(--border-color);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 800;
+    margin-top: 10px;
 }

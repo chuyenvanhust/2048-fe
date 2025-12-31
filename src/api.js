@@ -1,15 +1,20 @@
 import axios from 'axios';
 
-const API_BASE = 'https://two048-be-qaoi.onrender.com/api/game';
+const API_BASE = 'http://localhost:8088/api/game';
 
 // ========== SESSION MANAGEMENT ==========
 
 let sessionId = null;
-
+let sessionPromise = null;
 /**
  * Initialize or retrieve session ID
  */
 export const initSession = async () => {
+  // 🔥 Nếu đang có process tạo session, đợi nó hoàn thành
+  if (sessionPromise) {
+    return await sessionPromise;
+  }
+
   // Check if we have a stored session ID
   const storedSessionId = localStorage.getItem('gameSessionId');
   
@@ -27,22 +32,28 @@ export const initSession = async () => {
       }
     } catch (err) {
       console.log('Stored session invalid, creating new session');
+      localStorage.removeItem('gameSessionId'); // 🔥 Xóa session không hợp lệ
     }
   }
   
-  // Create new session
-  try {
-    const response = await axios.post(`${API_BASE}/session/create`);
-    sessionId = response.data.sessionId;
-    localStorage.setItem('gameSessionId', sessionId);
-    console.log('Created new session:', sessionId);
-    return sessionId;
-  } catch (err) {
-    console.error('Error creating session:', err);
-    throw err;
-  }
+  // Create new session với lock mechanism
+  sessionPromise = (async () => {
+    try {
+      const response = await axios.post(`${API_BASE}/session/create`);
+      sessionId = response.data.sessionId;
+      localStorage.setItem('gameSessionId', sessionId);
+      console.log('Created new session:', sessionId);
+      return sessionId;
+    } catch (err) {
+      console.error('Error creating session:', err);
+      throw err;
+    } finally {
+      sessionPromise = null; // 🔥 Reset lock sau khi hoàn thành
+    }
+  })();
+  
+  return await sessionPromise;
 };
-
 /**
  * Get current session ID (initialize if needed)
  */
@@ -53,12 +64,14 @@ export const getSessionId = async () => {
   return sessionId;
 };
 
+
 /**
  * Clear session (logout)
  */
 export const clearSession = () => {
   localStorage.removeItem('gameSessionId');
   sessionId = null;
+  sessionPromise = null; // 🔥 Reset cả promise
 };
 
 /**
