@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8088/api/game';
+const API_BASE = 'https://two048-be-qaoi.onrender.com/api/game';
 
 // ========== SESSION MANAGEMENT ==========
 
