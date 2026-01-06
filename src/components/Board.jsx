@@ -289,7 +289,7 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
               <option value="expectimax">Expectimax (Best)</option>
               <option value="greedy">Greedy</option>
               <option value="bfs">BFS</option>
-              <option value="dfs">DFS</option>
+              <option value="dls">DLS</option>
               <option value="ids">IDS</option>
               <option value="minimax">Minimax</option>
             </select>
@@ -322,7 +322,7 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
               <option value="expectimax">Expectimax</option>
               <option value="greedy">Greedy</option>
               <option value="bfs">BFS</option>
-              <option value="dfs">DFS</option>
+              <option value="dls">DLS</option>
               <option value="ids">IDS</option>
               <option value="minimax">Minimax</option>
             </select>
