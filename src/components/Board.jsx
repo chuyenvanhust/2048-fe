@@ -21,7 +21,7 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
 
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, stats: {} });
   const [isBatchRunning, setIsBatchRunning] = useState(false);
-  const [lastMove, setLastMove] = useState(null); // State cho hiệu ứng di chuyển
+  const [lastMove, setLastMove] = useState(null); 
 
   const stopSignal = useRef(false);
 
@@ -86,11 +86,11 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
     try {
       const res = await api.aiBoardMove(boardId, boardState.algorithm);
       
-      // Đọc hướng đi từ suggestedMove (Backend đã gán ở trên)
+     
       const movePerformed = res.data.suggestedMove;
 
       if (movePerformed) {
-        // RESET để ép React nhận diện thay đổi nếu hướng đi trùng nhau (ví dụ: LEFT -> LEFT)
+       
         setLastMove(null); 
         
         requestAnimationFrame(() => {
@@ -103,10 +103,10 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
         board: res.data.board,
         score: res.data.score,
         gameOver: res.data.gameOver,
-        suggestedMove: null // Xóa hint cũ (nếu có)
+        suggestedMove: null 
       }));
 
-      // Tắt hiệu ứng sau 300ms
+    
       setTimeout(() => setLastMove(null), 300);
 
       return !res.data.gameOver;
