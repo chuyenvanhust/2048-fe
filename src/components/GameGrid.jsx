@@ -1,28 +1,25 @@
 import React from 'react';
 
-/**
- * Component hiển thị toàn bộ bàn cờ với animation trượt mượt mà
- * FIXED: Tính toán vị trí chính xác để tile không tràn
- */
+
 const GameGrid = ({ board = [], suggestedMove }) => {
     const tiles = [];
     
-    // FIXED: Tính toán chính xác = cell_size (85px) + gap (12px) = 97px
+   
     const CELL_SIZE = 85;
     const GAP = 12;
-    const STEP = CELL_SIZE + GAP; // 97px
+    const STEP = CELL_SIZE + GAP; 
     
-    // Duyệt board để tạo danh sách các ô có giá trị
+   
     board.forEach((row, r) => {
         row.forEach((val, c) => {
             if (val !== 0) {
                 tiles.push({
-                    // Key duy nhất dựa trên vị trí và giá trị để React track animation
+                
                     key: `${r}-${c}-${val}`,
                     value: val,
                     row: r,
                     col: c,
-                    // FIXED: Tính toán vị trí chính xác
+                  
                     x: c * STEP,
                     y: r * STEP
                 });
@@ -46,7 +43,7 @@ const GameGrid = ({ board = [], suggestedMove }) => {
                     className={`tile tile-${t.value} ${t.value > 2048 ? 'tile-large' : ''}`}
                     style={{ 
                         transform: `translate(${t.x}px, ${t.y}px)`,
-                        // Inline style cho màu sắc để đảm bảo hiển thị đúng
+                      
                         backgroundColor: getTileColor(t.value),
                         color: t.value <= 4 ? '#776e65' : '#f9f6f2'
                     }}
@@ -100,9 +97,7 @@ const GameGrid = ({ board = [], suggestedMove }) => {
     );
 };
 
-/**
- * Hàm trả về màu sắc cho tile
- */
+
 const getTileColor = (value) => {
     const colors = {
         2: '#eee4da',
@@ -117,7 +112,7 @@ const getTileColor = (value) => {
         1024: '#edc53f',
         2048: '#edc22e'
     };
-    return colors[value] || '#3c3a32'; // Màu default cho tile lớn hơn 2048
+    return colors[value] || '#3c3a32';
 };
 
 export default GameGrid;
