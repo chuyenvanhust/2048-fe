@@ -10,7 +10,7 @@ let sessionPromise = null;
  * Initialize or retrieve session ID
  */
 export const initSession = async () => {
-  // 🔥 Nếu đang có process tạo session, đợi nó hoàn thành
+ 
   if (sessionPromise) {
     return await sessionPromise;
   }
@@ -32,7 +32,7 @@ export const initSession = async () => {
       }
     } catch (err) {
       console.log('Stored session invalid, creating new session');
-      localStorage.removeItem('gameSessionId'); // 🔥 Xóa session không hợp lệ
+      localStorage.removeItem('gameSessionId');
     }
   }
   
@@ -48,7 +48,7 @@ export const initSession = async () => {
       console.error('Error creating session:', err);
       throw err;
     } finally {
-      sessionPromise = null; // 🔥 Reset lock sau khi hoàn thành
+      sessionPromise = null; 
     }
   })();
   
@@ -71,7 +71,7 @@ export const getSessionId = async () => {
 export const clearSession = () => {
   localStorage.removeItem('gameSessionId');
   sessionId = null;
-  sessionPromise = null; // 🔥 Reset cả promise
+  sessionPromise = null; 
 };
 
 /**
