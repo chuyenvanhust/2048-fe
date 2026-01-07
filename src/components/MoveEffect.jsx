@@ -4,7 +4,7 @@ const MoveEffect = ({ direction, onAnimationEnd }) => {
     useEffect(() => {
         const timer = setTimeout(() => {
             if (onAnimationEnd) onAnimationEnd();
-        }, 500); // Giảm xuống 500ms cho mượt
+        }, 500); 
         return () => clearTimeout(timer);
     }, [direction, onAnimationEnd]);
 
