@@ -1,12 +1,9 @@
 import React from 'react';
 
-/**
- * Component hiển thị một ô cờ (tile) đơn lẻ
- */
 const Tile = ({ value, x, y }) => {
     const isNew = React.useRef(true);
     
-    // Logic xác định màu sắc (giữ nguyên của bạn hoặc tối ưu thêm)
+  
     const getBgColor = (v) => {
         const colors = {
             2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563',
