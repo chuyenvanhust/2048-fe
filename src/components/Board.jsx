@@ -21,7 +21,7 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
 
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, stats: {} });
   const [isBatchRunning, setIsBatchRunning] = useState(false);
-  const [lastMove, setLastMove] = useState(null); // 🔥 State cho hiệu ứng di chuyển
+  const [lastMove, setLastMove] = useState(null); // State cho hiệu ứng di chuyển
 
   const stopSignal = useRef(false);
 
@@ -63,7 +63,7 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
   const handleMove = async (direction) => {
     if (boardState.isRunning || isBatchRunning) return;
     
-    // 🔥 Trigger hiệu ứng di chuyển màu xanh
+    // Trigger hiệu ứng di chuyển màu xanh
     setLastMove(direction);
     
     try {
@@ -205,7 +205,7 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
   } catch (err) {
     console.error('Batch error:', err);
     
-    // 🔥 Xử lý lỗi 401 - session hết hạn
+    // Xử lý lỗi 401 - session hết hạn
     if (err.response?.status === 401) {
       alert('Session expired. Creating new session...');
       await api.initSession(); // Tạo session mới
@@ -354,7 +354,7 @@ const [boardUsername, setBoardUsername] = useState(`Player${boardId}`);
           suggestedMove={boardState.suggestedMove} 
         />
         
-        {/* 🔥 MOVE EFFECT OVERLAY - Hiệu ứng xanh lá khi di chuyển */}
+        {/*  MOVE EFFECT OVERLAY - Hiệu ứng xanh lá khi di chuyển */}
         {lastMove && (
           <MoveEffect 
             direction={lastMove}
