@@ -6,7 +6,6 @@ import React from 'react';
 const ArrowHint = ({ direction }) => {
     if (!direction) return null;
 
-    // Mapping hướng để hiển thị hiệu ứng gradient chảy
     const getHintStyle = () => {
         const base = "hint-direction-common ";
         switch (direction) {
